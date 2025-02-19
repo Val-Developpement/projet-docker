@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+
+  nginx1:
+    image: nginx:latest
+    container_name: nginx1
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default1.conf:/etc/nginx/conf.d/default.conf 
+    ports:
+      - "8080:80"
+    depends_on:
+      - php1
+    networks:
+      net_php1:
+        aliases:
+          - php
+
+  nginx2:
+    image: nginx:latest
+    container_name: nginx2
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default2.conf:/etc/nginx/conf.d/default.conf 
+    ports:
+      - "8081:80"
+    depends_on:
+      - php2
+    networks:
+      net_php2:
+        aliases:
+          - php
+
+
+
+  php1:
+    build:
+      context: ./src
+    container_name: php1
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - mysql
+    networks:
+      net_php1:
+
+
+  php2:
+    build:
+      context: ./src
+    container_name: php2
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - mysql
+    networks:
+      net_php2:
+
+
+
+  mysql:
+    image: mysql:8
+   
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: laravel_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - net_php1
+      - net_php2
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: docker_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: user
+      PMA_PASSWORD: password
+    ports:
+      - "8083:80"
+    depends_on:
+      - mysql
+    networks:
+      - net_php1
+      - net_php2
+
+volumes:
+  mysql_data:
+
+networks:
+  net_php1:
+  net_php2:
+   
